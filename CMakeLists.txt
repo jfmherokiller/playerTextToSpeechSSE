@@ -31,7 +31,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 # ---- Project ----
 
 project(
-	ExampleProject
+	playerTextToSpeechSSE
 	VERSION 1.0.0
 	LANGUAGES CXX
 )
@@ -62,6 +62,7 @@ endif()
 if (MSVC)
 	add_compile_definitions(
 		_UNICODE
+		SKSE_SUPPORT_XBYAK
 	)
 
 	if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")

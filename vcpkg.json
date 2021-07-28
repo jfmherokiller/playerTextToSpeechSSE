@@ -1,5 +1,5 @@
 {
-  "name": "exampleproject",
+  "name": "player-text-to-speech-sse",
   "version-string": "1.0.0",
   "description": "An example project built using CommonLibSSE",
   "homepage": "https://github.com/Ryan-rsm-McKenzie/ExamplePlugin-CommonLibSSE",
@@ -8,6 +8,7 @@
     "boost-atomic",
     "boost-stl-interfaces",
     "span-lite",
-    "spdlog"
+    "spdlog",
+    "xbyak"
   ]
 }
