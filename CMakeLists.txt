@@ -88,6 +88,8 @@ find_package(spdlog REQUIRED CONFIG)
 
 set(SOURCES
 	src/main.cpp
+	src/SpeachStuff.cpp
+	src/SpeachStuff.h
 	src/PCH.h
 )
 
