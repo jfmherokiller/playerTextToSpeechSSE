@@ -156,9 +156,12 @@ void stopSpeaking() {
 /*********************
  **	ON TOPIC SETTER **
 **********************/
-
-BYTE* gOnTopicSetter = (BYTE*)0x00674113;
-BYTE* gOnTopicSetterResume;
+//x86
+//BYTE* gOnTopicSetter = (BYTE*)0x00674113;
+//x64
+uintptr_t gOnTopicSetter = 0x014056F910;
+//comparison https://i.imgur.com/4ZAN0aU.png
+uintptr_t gOnTopicSetterResume;
 
 struct ObjectWithMessage {
     const char* message;
@@ -182,21 +185,7 @@ void __stdcall onTopicSetterHook(ObjectWithObjectWithMessage* object, uint32_t o
         speak(object->object->message);
     }
 }
-struct onTopicSetterHooked_code : Xbyak::CodeGenerator {
-    void Code()
-    {
-        push(edx);
-		mov(edx,ptr [esp+0xC]);
-		//pushad();
-		push(edx);
-		push(esi);
-		call(onTopicSetterHook);
-		//popad();
-		pop(edx);
-		jmp(gOnTopicSetterResume);
-        ret();
-    }
-};
+
 //__declspec(naked) void onTopicSetterHooked() {
 //    __asm {
 //    push edx
@@ -212,13 +201,32 @@ struct onTopicSetterHooked_code : Xbyak::CodeGenerator {
 //    jmp[gOnTopicSetterResume]
 //    }
 //}
+struct onTopicSetterHooked_code : Xbyak::CodeGenerator {
+    void Code()
+    {
+        push(edx);
+		mov(edx,ptr [esp+0xC]);
+		//pushad();
+		push(edx);
+		push(esi);
+		call(onTopicSetterHook);
+		//popad();
+		pop(edx);
+		jmp(reinterpret_cast<const char*>(gOnTopicSetterResume));
+        ret();
+    }
+};
+
 
 /***********************
  **	DIALOGUE SAY HOOK **
 ************************/
-
-BYTE* gOnDialogueSay = (BYTE*)0x006D397E;
-BYTE* gOnDialogueSayResume;
+//x86
+//BYTE* gOnDialogueSay = (BYTE*)0x006D397E;
+//comparison https://i.imgur.com/i2exbOy.png
+//X64
+uintptr_t gOnDialogueSay = 0x01405E837F;
+uintptr_t gOnDialogueSayResume;
 BYTE* gOnDialogueSaySkip = (BYTE*)0x006D39C4;
 
 bool __stdcall shouldDelayNPCSpeech() {
@@ -252,7 +260,7 @@ struct onDialogueSayHooked_code : Xbyak::CodeGenerator {
 		test(al,al);
 		jnz(DELAY_NPC_SPEECH);
 		//popad();
-		jmp(gOnTopicSetterResume);
+		jmp(reinterpret_cast<const char*>(gOnTopicSetterResume));
 
 		L(DELAY_NPC_SPEECH);
 		//popad();
@@ -375,11 +383,11 @@ bool InnerPluginLoad()
     // 1. When the topic is clicked, we'd like to remember the selected
     //    option (so that we can trigger same option choice later) and actually speak the TTS message
     //gOnTopicSetterResume = detourWithTrampoline(gOnTopicSetter, (BYTE*)onTopicSetterHooked.getCode<void*>(), 5);
-    //mytramp.write_branch(gOnTopicSetter,onTopicSetterHooked.getCode<void*>());
+    gOnTopicSetterResume = mytramp.write_branch<5>(gOnTopicSetter,onTopicSetterHooked.getCode<void*>());
     // 2. When the NPC is about to speak, we'd like prevent them initially, but still allow other dialogue events.
     //    We also check there, well, if user clicks during a convo to try to skip it, we'll also stop the TTS speaking.
     //gOnDialogueSayResume = detourWithTrampoline(gOnDialogueSay, (BYTE*)onDialogueSayHooked.getCode<void*>(), 6);
-
+    gOnDialogueSayResume = mytramp.write_branch<6>(gOnDialogueSay,onDialogueSayHooked.getCode<void*>());
 
     //if (!g_papyrusInterface) {
    //     _MESSAGE("Problem: g_papyrusInterface is false");
