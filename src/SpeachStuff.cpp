@@ -379,21 +379,24 @@ bool InnerPluginLoad()
     //x64
     //uintptr_t gOnDialogueSaySkip = 0x01405E83DA;
 	//file offset 0x005E77DA
-	gOnDialogueSaySkip = REL::Offset(0x005E83DA).address();
+	//RVA seems to be 0x5E83DA
+	gOnDialogueSaySkip = REL::Offset(0x5E83DA).address();
     //x86
     //BYTE* gOnDialogueSay = (BYTE*)0x006D397E;
     //comparison https://i.imgur.com/i2exbOy.png
     //X64
     //uintptr_t gOnDialogueSay = 0x01405E837F;
 	//file offset 0x005E777F
-	gOnDialogueSay = REL::Offset(0x005E837F).address();
+	//RVA seems to be 0x5E837F
+	gOnDialogueSay = REL::Offset(0x5E837F).address();
     //x86
     //BYTE* gOnTopicSetter = (BYTE*)0x00674113;
     //x64
     //uintptr_t gOnTopicSetter = 0x014056F910;
     //comparison https://i.imgur.com/4ZAN0aU.png
 	//file offset 0x0056ED10
-    gOnTopicSetter = REL::Offset(0x0056F910).address();
+	//RVA seems to be 0x56F910
+    gOnTopicSetter = REL::Offset(0x56F910).address();
     // These set up injection points to the game:
 	auto* onTopicSetterHooked = new onTopicSetterHooked_code();
 	auto* onDialogueSayHooked = new onDialogueSayHooked_code();
