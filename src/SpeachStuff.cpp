@@ -253,22 +253,6 @@ bool __stdcall shouldDelayNPCSpeech() {
 
     return false;
 }
-struct onDialogueSayHooked_code : Xbyak::CodeGenerator {
-    void Code()
-    {
-        Xbyak::Label DELAY_NPC_SPEECH;
-		//pushad();
-		call(shouldDelayNPCSpeech);
-		test(al,al);
-		jnz(DELAY_NPC_SPEECH);
-		//popad();
-		jmp(reinterpret_cast<const char*>(gOnTopicSetterResume));
-
-		L(DELAY_NPC_SPEECH);
-		//popad();
-		jmp(reinterpret_cast<const char*>(gOnDialogueSaySkip));
-    }
-};
 struct onDialogueSayHookedPatch :
     Xbyak::CodeGenerator
 {
