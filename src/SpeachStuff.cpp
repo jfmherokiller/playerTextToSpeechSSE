@@ -159,8 +159,8 @@ void stopSpeaking() {
 //x86
 //BYTE* gOnTopicSetter = (BYTE*)0x00674113;
 //x64
-uintptr_t gOnTopicSetter = 0x014056F910;
-//comparison https://i.imgur.com/4ZAN0aU.png
+//uintptr_t gOnTopicSetter = 0x014056F910;
+uintptr_t gOnTopicSetter;
 uintptr_t gOnTopicSetterResume;
 
 struct ObjectWithMessage {
@@ -204,16 +204,15 @@ void __stdcall onTopicSetterHook(ObjectWithObjectWithMessage* object, uint32_t o
 struct onTopicSetterHooked_code : Xbyak::CodeGenerator {
     void Code()
     {
-        push(edx);
-		mov(edx,ptr [esp+0xC]);
+        mov(rbx, ptr [rsp+98]);
+		//mov(edx,ptr [esp+0xC]);
 		//pushad();
-		push(edx);
-		push(esi);
+		//push(edx);
+		//push(esi);
 		call(onTopicSetterHook);
 		//popad();
 		pop(edx);
 		jmp(reinterpret_cast<const char*>(gOnTopicSetterResume));
-        ret();
     }
 };
 
@@ -221,13 +220,12 @@ struct onTopicSetterHooked_code : Xbyak::CodeGenerator {
 /***********************
  **	DIALOGUE SAY HOOK **
 ************************/
-//x86
-//BYTE* gOnDialogueSay = (BYTE*)0x006D397E;
-//comparison https://i.imgur.com/i2exbOy.png
-//X64
-uintptr_t gOnDialogueSay = 0x01405E837F;
+
+uintptr_t gOnDialogueSay;
 uintptr_t gOnDialogueSayResume;
-BYTE* gOnDialogueSaySkip = (BYTE*)0x006D39C4;
+uintptr_t gOnDialogueSaySkip;
+
+
 
 bool __stdcall shouldDelayNPCSpeech() {
     if (!gModEnabled) {
@@ -264,7 +262,7 @@ struct onDialogueSayHooked_code : Xbyak::CodeGenerator {
 
 		L(DELAY_NPC_SPEECH);
 		//popad();
-		jmp(gOnDialogueSaySkip);
+		jmp(reinterpret_cast<const char*>(gOnDialogueSaySkip));
     }
 };
 //__declspec(naked) void onDialogueSayHooked() {
@@ -376,18 +374,38 @@ bool registerFuncs(RE::BSScript::Internal::VirtualMachine* a_registry) {
 
 bool InnerPluginLoad()
 {
+    //x86
+    //BYTE* gOnDialogueSaySkip = (BYTE*)0x006D39C4;
+    //x64
+    //uintptr_t gOnDialogueSaySkip = 0x01405E83DA;
+	//file offset 0x005E77DA
+	gOnDialogueSaySkip = REL::Offset(0x005E83DA).address();
+    //x86
+    //BYTE* gOnDialogueSay = (BYTE*)0x006D397E;
+    //comparison https://i.imgur.com/i2exbOy.png
+    //X64
+    //uintptr_t gOnDialogueSay = 0x01405E837F;
+	//file offset 0x005E777F
+	gOnDialogueSay = REL::Offset(0x005E837F).address();
+    //x86
+    //BYTE* gOnTopicSetter = (BYTE*)0x00674113;
+    //x64
+    //uintptr_t gOnTopicSetter = 0x014056F910;
+    //comparison https://i.imgur.com/4ZAN0aU.png
+	//file offset 0x0056ED10
+    gOnTopicSetter = REL::Offset(0x0056F910).address();
     // These set up injection points to the game:
-	onTopicSetterHooked_code onTopicSetterHooked;
-	onDialogueSayHooked_code onDialogueSayHooked;
-	SKSE::Trampoline mytramp;
+	auto* onTopicSetterHooked = new onTopicSetterHooked_code();
+	auto* onDialogueSayHooked = new onDialogueSayHooked_code();
+    auto& trampoline = SKSE::GetTrampoline();
     // 1. When the topic is clicked, we'd like to remember the selected
     //    option (so that we can trigger same option choice later) and actually speak the TTS message
     //gOnTopicSetterResume = detourWithTrampoline(gOnTopicSetter, (BYTE*)onTopicSetterHooked.getCode<void*>(), 5);
-    gOnTopicSetterResume = mytramp.write_branch<5>(gOnTopicSetter,onTopicSetterHooked.getCode<void*>());
+    gOnTopicSetterResume = trampoline.write_branch<5>(gOnTopicSetter,onTopicSetterHooked->getCode());
     // 2. When the NPC is about to speak, we'd like prevent them initially, but still allow other dialogue events.
     //    We also check there, well, if user clicks during a convo to try to skip it, we'll also stop the TTS speaking.
     //gOnDialogueSayResume = detourWithTrampoline(gOnDialogueSay, (BYTE*)onDialogueSayHooked.getCode<void*>(), 6);
-    gOnDialogueSayResume = mytramp.write_branch<6>(gOnDialogueSay,onDialogueSayHooked.getCode<void*>());
+    gOnDialogueSayResume = trampoline.write_branch<6>(gOnDialogueSay,onDialogueSayHooked->getCode());
 
     //if (!g_papyrusInterface) {
    //     _MESSAGE("Problem: g_papyrusInterface is false");
@@ -406,6 +424,6 @@ bool InnerPluginLoad()
    //     return false;
    // }
 
-    //_MESSAGE("TTS Voiced Player Dialogue loaded");
+    logger::info<>("TTS Voiced Player Dialogue loaded");
     return true;
 }
