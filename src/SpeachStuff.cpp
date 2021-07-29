@@ -201,21 +201,25 @@ void __stdcall onTopicSetterHook(ObjectWithObjectWithMessage* object, uint32_t o
 //    jmp[gOnTopicSetterResume]
 //    }
 //}
-struct onTopicSetterHooked_code : Xbyak::CodeGenerator {
-    void Code()
+struct onTopicSetterHookedPatch :
+    Xbyak::CodeGenerator
+{
+    explicit onTopicSetterHookedPatch(uintptr_t SetResumeLoc,uintptr_t SetterHook)
     {
-        mov(rbx, ptr [rsp+98]);
-		//mov(edx,ptr [esp+0xC]);
-		//pushad();
-		//push(edx);
-		//push(esi);
-		call(onTopicSetterHook);
-		//popad();
-		pop(edx);
-		jmp(reinterpret_cast<const char*>(gOnTopicSetterResume));
+        mov(rbx, ptr [rsp+0x98]);
+        //mov(edx,ptr [esp+0xC]);
+        //pushad();
+        //push(edx);
+        //push(esi);
+		push(rax);
+		mov(rax, SetterHook);
+		call(rax);
+        pop(rax);
+        //popad();
+        //pop(edx);
+        jmp(reinterpret_cast<const char*>(SetResumeLoc));
     }
 };
-
 
 /***********************
  **	DIALOGUE SAY HOOK **
@@ -263,6 +267,27 @@ struct onDialogueSayHooked_code : Xbyak::CodeGenerator {
 		L(DELAY_NPC_SPEECH);
 		//popad();
 		jmp(reinterpret_cast<const char*>(gOnDialogueSaySkip));
+    }
+};
+struct onDialogueSayHookedPatch :
+    Xbyak::CodeGenerator
+{
+    explicit onDialogueSayHookedPatch(uintptr_t SayResume, uintptr_t DelayTest)
+    {
+        Xbyak::Label DELAY_NPC_SPEECH;
+        //pushad();
+		push(rcx);
+		mov(rcx,DelayTest);
+		call(rcx);
+		pop(rcx);
+        test(al,al);
+        jnz(DELAY_NPC_SPEECH);
+        //popad();
+        jmp(reinterpret_cast<const char*>(SayResume));
+
+        L(DELAY_NPC_SPEECH);
+        //popad();
+        jmp(reinterpret_cast<const char*>(gOnDialogueSaySkip));
     }
 };
 //__declspec(naked) void onDialogueSayHooked() {
@@ -398,17 +423,21 @@ bool InnerPluginLoad()
 	//RVA seems to be 0x56F910
     gOnTopicSetter = REL::Offset(0x56F910).address();
     // These set up injection points to the game:
-	auto* onTopicSetterHooked = new onTopicSetterHooked_code();
-	auto* onDialogueSayHooked = new onDialogueSayHooked_code();
     auto& trampoline = SKSE::GetTrampoline();
-    // 1. When the topic is clicked, we'd like to remember the selected
+    uintptr_t TopicSetterResumeptr = (gOnTopicSetter + 5);
+	uintptr_t DialogSayResumeptr = (gOnDialogueSay + 6);
+    onTopicSetterHookedPatch Tsh{ TopicSetterResumeptr, reinterpret_cast<uintptr_t>(onTopicSetterHook) };
+    onDialogueSayHookedPatch Dsh{ DialogSayResumeptr, reinterpret_cast<uintptr_t>(shouldDelayNPCSpeech) };
+    auto onDialogueSayHooked = trampoline.allocate(Dsh);
+    auto onTopicSetterHooked = trampoline.allocate(Tsh);
+        // 1. When the topic is clicked, we'd like to remember the selected
     //    option (so that we can trigger same option choice later) and actually speak the TTS message
-    //gOnTopicSetterResume = detourWithTrampoline(gOnTopicSetter, (BYTE*)onTopicSetterHooked.getCode<void*>(), 5);
-    gOnTopicSetterResume = trampoline.write_branch<5>(gOnTopicSetter,onTopicSetterHooked->getCode());
+    //gOnTopicSetterResume = detourWithTrampoline(gOnTopicSetter, (BYTE*)onTopicSetterHooked, 5);
+    gOnTopicSetterResume = trampoline.write_branch<5>(gOnTopicSetter,onTopicSetterHooked);
     // 2. When the NPC is about to speak, we'd like prevent them initially, but still allow other dialogue events.
     //    We also check there, well, if user clicks during a convo to try to skip it, we'll also stop the TTS speaking.
-    //gOnDialogueSayResume = detourWithTrampoline(gOnDialogueSay, (BYTE*)onDialogueSayHooked.getCode<void*>(), 6);
-    gOnDialogueSayResume = trampoline.write_branch<6>(gOnDialogueSay,onDialogueSayHooked->getCode());
+    //gOnDialogueSayResume = detourWithTrampoline(gOnDialogueSay, (BYTE*)onDialogueSayHooked, 6);
+    gOnDialogueSayResume = trampoline.write_branch<6>(gOnDialogueSay,onDialogueSayHooked);
 
     //if (!g_papyrusInterface) {
    //     _MESSAGE("Problem: g_papyrusInterface is false");
