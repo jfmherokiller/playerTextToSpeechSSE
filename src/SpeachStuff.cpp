@@ -137,8 +137,8 @@ void initializeVoices() {
 }
 
 void speak(const char* message) {
-    auto masterVolumeSetting = RE::BGSDefaultObjectManager::GetSingleton()->GetObjectA<RE::BGSSoundCategory>(RE::DEFAULT_OBJECTS::kMasterSoundCategory)->GetCategoryVolume();
-    auto voiceVolumeSetting = RE::BGSDefaultObjectManager::GetSingleton()->GetObjectA<RE::BGSSoundCategory>(RE::DEFAULT_OBJECTS::kDialogueVoiceCategory)->GetCategoryVolume();
+    auto masterVolumeSetting = RE::BGSDefaultObjectManager::GetSingleton()->GetObject<RE::BGSSoundCategory>(RE::DEFAULT_OBJECTS::kMasterSoundCategory)->GetCategoryVolume();
+    auto voiceVolumeSetting = RE::BGSDefaultObjectManager::GetSingleton()->GetObject<RE::BGSSoundCategory>(RE::DEFAULT_OBJECTS::kDialogueVoiceCategory)->GetCategoryVolume();
 
     initializeVoices();
     std::wstringstream messageStream;

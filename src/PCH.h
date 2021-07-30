@@ -24,6 +24,7 @@
 #undef GetModuleHandle
 #undef max
 #undef min
+#undef GetObject
 #ifndef __cpp_consteval
 namespace std {
     inline namespace fundamentals_v2 {
