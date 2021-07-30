@@ -137,8 +137,8 @@ void initializeVoices() {
 }
 
 void speak(const char* message) {
-    auto masterVolumeSetting = RE::BGSDefaultObjectManager::GetSingleton()->GetObject<RE::BGSSoundCategory>(RE::DEFAULT_OBJECTS::kMasterSoundCategory)->GetCategoryVolume();
-    auto voiceVolumeSetting = RE::BGSDefaultObjectManager::GetSingleton()->GetObject<RE::BGSSoundCategory>(RE::DEFAULT_OBJECTS::kDialogueVoiceCategory)->GetCategoryVolume();
+	auto masterVolumeSetting = RE::TESForm::LookupByID<RE::BGSSoundCategory>(0x000EB803)->GetCategoryVolume();
+	auto voiceVolumeSetting = RE::TESForm::LookupByID<RE::BGSSoundCategory>(0x000876BD)->GetCategoryVolume();
 
     initializeVoices();
     std::wstringstream messageStream;
@@ -213,11 +213,11 @@ struct onTopicSetterHookedPatch :
         //pushad();
         //push(edx);
         //push(esi);
-		push(rax);
-		mov(rax, rsi);
 		push(rcx);
-		mov(rcx, SetterHook);
-		call(rcx);
+		mov(rcx, rsi);
+		push(rax);
+		mov(rax, SetterHook);
+		call(rax);
         pop(rax);
 		pop(rcx);
         //popad();
@@ -267,7 +267,9 @@ struct onDialogueSayHookedPatch :
     {
         Xbyak::Label DELAY_NPC_SPEECH;
         //pushad();
-		mov(ecx, ptr[rdi + 0x14]);
+		int(3);
+        mov(ptr [rsp+0x20], ecx);
+        mov(rcx, rbx);
 		push(rcx);
 		mov(rcx,DelayTest);
 		call(rcx);
@@ -400,14 +402,14 @@ bool InnerPluginLoad()
     //uintptr_t gOnDialogueSaySkip = 0x01405E83D8;
 	//file offset 0x005E77D8
 	//RVA seems to be 0x5E83D8
-	gOnDialogueSaySkip = REL::Offset(0x5E83D8).address();
+	gOnDialogueSaySkip = REL::Offset(0x5E83D1).address();
     //x86
     //BYTE* gOnDialogueSay = (BYTE*)0x006D397E;
     //comparison https://i.imgur.com/i2exbOy.png
     //X64
     //uintptr_t gOnDialogueSay = 0x01405E837F;
-	gOnDialogueSay = REL::Offset(0x5E777E).address();
-	gOnDialogueSayResume = REL::Offset(0x5E77B4).address();
+    gOnDialogueSay = REL::Offset(0x5E83C5).address();
+    gOnDialogueSayResume = REL::Offset(0x5E83CC).address();
     //x86
     //BYTE* gOnTopicSetter = (BYTE*)0x00674113;
     //x64
@@ -416,7 +418,7 @@ bool InnerPluginLoad()
 	//file offset 0x0056ED10
 	//RVA seems to be 0x56F910
     gOnTopicSetter = REL::Offset(0x56F910).address();
-	gOnTopicSetterResume = REL::Offset(0x56ED18).address();
+    gOnTopicSetterResume = REL::Offset(0x56F918).address();
     // These set up injection points to the game:
     auto& trampoline = SKSE::GetTrampoline();
 	onTopicSetterHookedPatch Tsh{ reinterpret_cast<uintptr_t>(onTopicSetterHook), reinterpret_cast<uintptr_t>(gOnTopicSetterResumePtr) };
@@ -433,7 +435,7 @@ bool InnerPluginLoad()
     // 2. When the NPC is about to speak, we'd like prevent them initially, but still allow other dialogue events.
     //    We also check there, well, if user clicks during a convo to try to skip it, we'll also stop the TTS speaking.
     //gOnDialogueSayResume = detourWithTrampoline(gOnDialogueSay, (BYTE*)onDialogueSayHooked, 6);
-	REL::safe_fill(gOnDialogueSay, 0x90, 8);
+	REL::safe_fill(gOnDialogueSay, 0x90, 7);
     trampoline.write_branch<5>(gOnDialogueSay,onDialogueSayHooked);
 
     //if (!g_papyrusInterface) {
