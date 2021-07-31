@@ -434,8 +434,8 @@ bool InnerPluginLoad()
     // 2. When the NPC is about to speak, we'd like prevent them initially, but still allow other dialogue events.
     //    We also check there, well, if user clicks during a convo to try to skip it, we'll also stop the TTS speaking.
     //gOnDialogueSayResume = detourWithTrampoline(gOnDialogueSay, (BYTE*)onDialogueSayHooked, 6);
-	REL::safe_fill(gOnDialogueSay, 0x90, 7);
-    trampoline.write_branch<5>(gOnDialogueSay,onDialogueSayHooked);
+	//REL::safe_fill(gOnDialogueSay, 0x90, 7);
+    //trampoline.write_branch<5>(gOnDialogueSay,onDialogueSayHooked);
 
     //if (!g_papyrusInterface) {
    //     _MESSAGE("Problem: g_papyrusInterface is false");
