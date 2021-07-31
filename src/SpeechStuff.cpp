@@ -2,10 +2,8 @@
 // Created by peter on 7/27/21.
 //
 
-using namespace std;
 
-
-vector<ISpObjectToken*> gVoices;
+std::vector<ISpObjectToken*> gVoices;
 ISpVoice* gVoice = nullptr;
 
 // Default settings - should match those in Papyrus
@@ -82,9 +80,9 @@ void __stdcall executeVoiceNotifyThread() {
 *********************************************/
 
 
-vector<ISpObjectToken*> getVoices() {
+std::vector<ISpObjectToken*> getVoices() {
 
-    vector<ISpObjectToken*> voiceObjects;
+    std::vector<ISpObjectToken*> voiceObjects;
     ULONG voiceCount = 0;
     ISpObjectToken* voiceObject;
     IEnumSpObjectTokens* enumVoiceObjects;
