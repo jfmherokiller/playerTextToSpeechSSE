@@ -1,0 +1,10 @@
+//
+// Created by peter on 7/27/21.
+//
+
+#ifndef PLAYERTEXTTOSPEECHSSE_SPEECHSTUFF_H
+#define PLAYERTEXTTOSPEECHSSE_SPEECHSTUFF_H
+
+bool InnerPluginLoad();
+
+#endif  //PLAYERTEXTTOSPEECHSSE_SPEECHSTUFF_H

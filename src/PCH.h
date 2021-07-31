@@ -71,7 +71,7 @@ namespace std {
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include "SpeachStuff.h"
+#include "SpeechStuff.h"
 
 #pragma warning(push)
 #ifdef NDEBUG
