@@ -317,7 +317,7 @@ void SetRateAdjustFn() {
 std::string getAvailableTTSVoices(RE::StaticFunctionTag*) {
     std::vector<ISpObjectToken*> voices = getVoices(); // We can't just use `gVoices` because it's on another thread
     std::vector<std::string> vmVoiceList;
-    WCHAR* szDesc;
+    WCHAR* szDesc{};
     const char* szDescString;
 
     size_t size = voices.size();
