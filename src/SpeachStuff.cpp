@@ -408,7 +408,7 @@ bool InnerPluginLoad()
     //X64
     //uintptr_t gOnDialogueSay = 0x01405E837F;
     gOnDialogueSay = REL::Offset(0x5E83C5).address();
-    gOnDialogueSayResume = REL::Offset(0x5E83CA).address();
+    gOnDialogueSayResume = REL::Offset(0x5E83C9).address();
     //x86
     //BYTE* gOnTopicSetter = (BYTE*)0x00674113;
     //x64
