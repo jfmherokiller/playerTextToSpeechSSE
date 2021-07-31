@@ -267,7 +267,6 @@ struct onDialogueSayHookedPatch :
     {
         Xbyak::Label DELAY_NPC_SPEECH;
         //pushad();
-		int(3);
         mov(ptr [rsp+0x20], ecx);
         mov(rcx, rbx);
 		push(rcx);
@@ -409,7 +408,7 @@ bool InnerPluginLoad()
     //X64
     //uintptr_t gOnDialogueSay = 0x01405E837F;
     gOnDialogueSay = REL::Offset(0x5E83C5).address();
-    gOnDialogueSayResume = REL::Offset(0x5E83CC).address();
+    gOnDialogueSayResume = REL::Offset(0x5E83CA).address();
     //x86
     //BYTE* gOnTopicSetter = (BYTE*)0x00674113;
     //x64
