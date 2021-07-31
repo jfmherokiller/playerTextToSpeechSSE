@@ -50,7 +50,7 @@ void TopicSpokenEventDelegateFn() {
         gPlayerSpeech->state = TOPIC_SPOKEN;
         gPlayerSpeech->isNPCSpeechDelayed = false;
 
-        // Here's the fun part: once TTS stopped speaking, we gotta set the topic again,
+        // Here's the fun part: once TTS stopped speaking, we have to set the topic again,
         // then speak it. It's already done on the first click event, but we're ignoring it
         // with our onDialogueSayHook to allow TTS to speak.
         //RE::MenuTopicManager* mtm = RE::MenuTopicManager::GetSingleton();
@@ -73,7 +73,7 @@ void executeVoiceNotifyThread() {
             }
         }
     } while (gVoice != nullptr);
-};
+}
 
 /********************************************
  **	Initializing voices and setting up TTS **
@@ -292,7 +292,7 @@ struct onDialogueSayHookedPatch :
 //    pushad
 //    call shouldDelayNPCSpeech
 //    test al, al
-//    jnz DELAY_NPC_SPEECH // If should delay NPC speech, go to some code after
+//    jnz DELAY_NPC_SPEECH // If we should delay NPC speech, go to some code after
 //    popad
 //    jmp[gOnDialogueSayResume]
 //
