@@ -60,7 +60,7 @@ void TopicSpokenEventDelegateFn() {
 }
 
 
-void __stdcall executeVoiceNotifyThread() {
+void executeVoiceNotifyThread() {
     CSpEvent evt;
 	HANDLE voiceNotifyHandle = gVoice->GetNotifyEventHandle();
 
@@ -117,9 +117,11 @@ void initializeVoices() {
 
         if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED))) {
             //_MESSAGE("Problem: CoInitializeEx failed");
+            logger::error<>("Problem: CoCreateInstance failed");
         }
         else if (FAILED(CoCreateInstance(CLSID_SpVoice, nullptr, CLSCTX_ALL, IID_ISpVoice, (void **)&gVoice))) {
             //_MESSAGE("Problem: CoCreateInstance failed");
+            logger::error<>("Problem: CoCreateInstance failed");
         }
 
         CoUninitialize();
@@ -128,6 +130,7 @@ void initializeVoices() {
 
         if (FAILED(gVoice->SetInterest(eventTypes, eventTypes))) {
             //_MESSAGE("Problem: SetInterest failed");
+            logger::error<>("Problem: SetInterest failed");
         }
 
         CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)executeVoiceNotifyThread, nullptr, NULL, nullptr);
@@ -170,7 +173,7 @@ struct ObjectWithObjectWithMessage {
     ObjectWithMessage* object;
 };
 
-void __stdcall onTopicSetterHook(RE::MenuTopicManager* object, uint32_t option)
+void onTopicSetterHook(RE::MenuTopicManager* object, uint32_t option)
 {
     if (!gModEnabled) {
         return;
@@ -236,7 +239,7 @@ uintptr_t gOnDialogueSaySkip;
 uintptr_t* gOnDialogueSayResumePtr = &gOnDialogueSayResume;
 
 
-bool __stdcall shouldDelayNPCSpeech() {
+bool shouldDelayNPCSpeech() {
     if (!gModEnabled) {
         return false;
     }
